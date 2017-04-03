@@ -1,0 +1,2 @@
+# sci-comp
+Course assignments
