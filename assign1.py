@@ -11,9 +11,24 @@ T = 100
 C, delta_x, delta_t = 1, 1/float(N), 0.01
 
 # The transversal string position for all x-values at t = 0
+# Question 1
 def t0(n):
     x = n/float(N)
     return math.sin(2*math.pi*x)
+
+# # The transversal string position for all x-values at t = 0
+# # Question 2
+# def t0(n):
+#     x = n/float(N)
+#     return math.sin(5*math.pi*x)
+
+# # The transversal string position for all x-values at t = 0
+# # Question 3
+# def t0(n):
+#     x = n/float(N)
+#     if x <= 1/5 or x >= 2/5:
+#         return 0
+#     return math.sin(5*math.pi*x)
 
 # The first time derivative (transversal speed)
 # for all x-values at t = 0
