@@ -6,7 +6,7 @@ import math
 import pandas # for printing
 
 # Number of discrete time and spatial steps
-N = 100
+N= 100
 T = 100
 C, delta_x, delta_t = 1, 1/float(N), 0.01
 
@@ -35,25 +35,23 @@ def t0(n):
 def t0_deriv(x):
     return 0
 
-first, second = [], []
-for n in range(N):
-    first.append(t0(n))
-    second.append(t0(n) + delta_t*t0_deriv(n))
-
-M = [first, second]
+M = np.zeros((T,N))
 D = C*(delta_t/float(delta_x))**2
+# Defining initial conditions in matrix
+for n in range(N):
+    M[0,n] = t0(n)
+    M[1,n] = t0(n) + delta_t*t0_deriv(n)
+
 for t in range(T-2):
     t = t + 2
-    thisStep, lastStep, lastlastStep = [0], M[-1], M[-2]
+    M[t,0], M[t,N-1] = 0, 0
     for n in range(N-2):
         n += 1
-        thisStep.append(
-            D*(lastStep[n-1]-2*lastStep[n]+lastStep[n+1]) \
-            + 2*lastStep[n] - lastlastStep[n]
+        M[t,n] = (
+            D*(M[t-1,n-1]-2*M[t-1,n]+M[t-1,n+1]) \
+            + 2*M[t-1,n] - M[t-2,n]
         )
-    thisStep.append(0)
-    M.append(thisStep)
-    # print(pandas.DataFrame(M))
+print(pandas.DataFrame(M))
 
 plt.matshow(M)
 plt.show()
