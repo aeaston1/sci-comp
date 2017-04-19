@@ -23,7 +23,7 @@ def newMatrix():
         M[n,N] = 1
     return M
 
-def analytic(x, y):
+def analytic(y):
     return y
 
 def Jacobi(M):
@@ -70,7 +70,7 @@ def GaussSeidel(M):
             print("Gauss-Seidel terminated in iteration ",k) #add timer?
             break
 
-    return M
+    return M, k
 
 def SOR(M, omega):
     k  = 0
@@ -91,7 +91,7 @@ def SOR(M, omega):
             print("Gauss-Seidel terminated in iteration ",k) #add timer?
             break
 
-    return M
+    return M, k
 
 if __name__ == "__main__":
     # Question G
@@ -122,8 +122,8 @@ if __name__ == "__main__":
         M = newMatrix()
         return ROS(M, omega)
 
-    res = minimize(minROS, omega, bounds = (1.7, 2))
+    res = minimize(minROS, omega, bounds = (1, 1.99))
     optimalOmega = res.x
-    
+
 # plt.matshow(M)
 # plt.show()
