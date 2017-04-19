@@ -11,8 +11,8 @@ import copy
 N = 50
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 Cons, delta_xy = 1/4.0, 1/float(N)
-maxiters = 1000
-epsilon = 0.001 # Break-off value for convergence
+maxiters = 100000
+epsilon = 0.0001 # Break-off value for convergence
 omega = 1.7 # For SOR algoritm
 
 def newMatrix():
@@ -24,10 +24,11 @@ def newMatrix():
     return M
 
 def analytic(y):
-    return y
+    return y*delta_xy
 
-def Jacobi(M):
+def Jacobi(M, epsilon):
     k = 0
+    newM = copy.deepcopy(M)
     while (k < maxiters):
         k += 1
 
@@ -52,7 +53,7 @@ def Jacobi(M):
 
     return M, k
 
-def GaussSeidel(M):
+def GaussSeidel(M, epsilon):
     k  = 0
     while (k < maxiters):
         c = 0
@@ -72,7 +73,7 @@ def GaussSeidel(M):
 
     return M, k
 
-def SOR(M, omega):
+def SOR(M, epsilon, omega):
     k  = 0
     while (k < maxiters):
         c = 0
@@ -88,42 +89,56 @@ def SOR(M, omega):
             if delta > epsilon:
                 c += 1
         if c == 0:
-            print("Gauss-Seidel terminated in iteration ",k) #add timer?
+            print("SOR terminated in iteration ",k) #add timer?
             break
 
     return M, k
 
 if __name__ == "__main__":
-    # Question G
-    JacobiSolution = Jacobi(newMatrix())[0]
-    GaussSeidelSolution = GaussSeidel(newMatrix())[0]
-    SORSolution = SOR(newMatrix(), omega)[0]
-    analyticSolution = [analytic(y+1) for y in range(N-1)]
+    # # Question G
+    # JacobiSolution = Jacobi(newMatrix(), epsilon)[0]
+    # GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon)[0]
+    # SORSolution = SOR(newMatrix(), epsilon, omega)[0]
+    # analyticSolution = [analytic(y) for y in range(N+1)]
+    #
+    # plt.plot(JacobiSolution[0])
+    # plt.plot(GaussSeidelSolution[0])
+    # plt.plot(SORSolution[0])
+    # plt.plot(analyticSolution)
+    # plt.legend(['Jacobi','Gauss-Seidel','SOR','Analytic solution'])
+    # plt.show()
 
-    plt.plot(JacobiSolution[0])
-    plt.plot(GaussSeidelSolution[0])
-    plt.plot(SORSolution[0])
-    plt.plot(analyticSolution)
-    plt.show()
-
-    # Question H
-    deltas = [d**-(i+1) for i in range(4)]
-    iterations = []
-    for delta in deltas:
-        iterations += Jacobi(newMatrix())[1]
-        iterations += GaussSeidel(newMatrix())[1]
-        for omega in [1.7, 1.8, 1.9, 2.0]:
-            iterations += SOR(newMatrix(), omega)[1]
-
-    # Plot number of iterations as function of delta
+    # # Question H
+    # epsilons = [10**-(i+1) for i in range(8)]
+    # J, G, S1, S2 = [], [], [], []
+    # for epsilon in epsilons:
+    #     print("================")
+    #     print("Epsilon = ",epsilon)
+    #     print("================")
+    #     J.append(Jacobi(newMatrix(), epsilon)[1])
+    #     G.append(GaussSeidel(newMatrix(), epsilon)[1])
+    #     S1.append(SOR(newMatrix(), epsilon, 1.4)[1])
+    #     S2.append(SOR(newMatrix(), epsilon, 1.7)[1])
+    #
+    # plt.loglog(epsilons, J)
+    # plt.loglog(epsilons, G)
+    # plt.loglog(epsilons, S1)
+    # plt.loglog(epsilons, S2)
+    # plt.xlim(epsilons[0], epsilons[-1])
+    # plt.legend(['Jacobi','Gauss-Seidel','SOR, $\omega = 1.4$','SOR, $\omega = 1.7$'])
+    # plt.show()
 
     # Question I
-    def minROS(omega):
+    def minSOR(omega):
+        print(omega)
         M = newMatrix()
-        return ROS(M, omega)
+        k = SOR(M, 0.0001, omega[0])[1]
+        print(k)
+        return k
 
-    res = minimize(minROS, omega, bounds = (1, 1.99))
+    res = minimize(minSOR, 1.5)
     optimalOmega = res.x
+    print(optimalOmega)
 
 # plt.matshow(M)
 # plt.show()
