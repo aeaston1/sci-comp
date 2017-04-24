@@ -24,7 +24,13 @@ def analytic(x, t):
     c = 0
     a = 2*math.sqrt(D*t)
     for i in range(1000):
+<<<<<<< HEAD
         c += (math.erfc((1-x+(2*i))/a) - math.erfc((1+x+(2*i))/a))
+=======
+        a = 2*math.sqrt(D*t)
+        c += math.erfc((1-x+2*i)/a)
+        c -= math.erfc((1+x+2*i)/a)
+>>>>>>> master
     return c
 
 for t in range(1000):
