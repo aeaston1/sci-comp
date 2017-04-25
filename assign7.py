@@ -26,7 +26,7 @@ def newMatrix():
 def analytic(y):
     return y*delta_xy
 
-def Jacobi(M, epsilon):
+def Jacobi(M, epsilon, x1=None, x2=None, y1=None, y2=None):
     k = 0
     newM = copy.deepcopy(M)
     while (k < maxiters):
@@ -36,6 +36,12 @@ def Jacobi(M, epsilon):
             newM[x,y] = Cons*(
                 M[x-1,y] + M[(x+1)%N,y] + M[x,y-1] + M[x,y+1]
                 )
+        if x1 and x2 and y1 and y2:
+            newM = add_blocks(x1,x2,y1,y2, newM)
+        # adding a block between defined x and y values
+        #for i in range(x1,x2):
+        #    for j in range(y1,y2):
+        #        newM[i, j] = 0
 
         # Determine if system is converged
         difference = abs(M - newM)
@@ -53,7 +59,7 @@ def Jacobi(M, epsilon):
 
     return M, k
 
-def GaussSeidel(M, epsilon):
+def GaussSeidel(M, epsilon, x1=None, x2=None, y1=None, y2=None):
     k  = 0
     while (k < maxiters):
         c = 0
@@ -64,6 +70,10 @@ def GaussSeidel(M, epsilon):
             delta = abs(newValue - M[x,y])
             M[x,y] = newValue
 
+        #adding blocks
+        if x1 and x2 and y1 and y2:
+            M = add_blocks(x1,x2,y1,y2, M)
+
         # Determine if system is converged
             if delta > epsilon:
                 c += 1
@@ -73,7 +83,7 @@ def GaussSeidel(M, epsilon):
 
     return M, k
 
-def SOR(M, epsilon, omega):
+def SOR(M, epsilon, omega, x1=None, x2=None, y1=None, y2=None):
     k  = 0
     while (k < maxiters):
         c = 0
@@ -85,6 +95,10 @@ def SOR(M, epsilon, omega):
             delta = abs(newValue - M[x,y])
             M[x,y] = newValue
 
+        #adding blocks
+        if x1 and x2 and y1 and y2:
+            M = add_blocks(x1,x2,y1,y2, M)
+
         # Determine if system is converged
             if delta > epsilon:
                 c += 1
@@ -93,6 +107,14 @@ def SOR(M, epsilon, omega):
             break
 
     return M, k
+
+def add_blocks(x1, x2, y1, y2, M):
+    for x in range(x1, x2):
+        for y in range(y1,y2):
+            M[x,y] = 0
+            newM = copy.deepcopy(M)
+    return newM
+
 
 if __name__ == "__main__":
     # # Question G
@@ -147,7 +169,30 @@ if __name__ == "__main__":
         res = minimize(minSOR, 1.8, method='nelder-mead')
         optimalOmega = res.x
         results.append(optimalOmega)
+        
     plt.plot(sizes,results)
     plt.xlabel('Grid size N')
     plt.ylabel('Optimal $\omega$-value')
     plt.show()
+
+    # Question J
+    fig, axarr = plt.subplots(ncols=3, nrows=1)
+
+    JacobiSolution = Jacobi(newMatrix(), epsilon, 40,45,40,45)[0]
+    GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon, 40,45,40,45)[0]
+    SORSolution = SOR(newMatrix(), epsilon, omega, 40,45,40,45)[0]
+    #analyticSolution = [analytic(y) for y in range(N+1)]
+
+    axarr[0].matshow(JacobiSolution)
+    axarr[0].set_title('Jacobi Solution', fontsize=20)
+    axarr[1].matshow(GaussSeidelSolution)
+    axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
+    axarr[2].matshow(SORSolution)
+    axarr[2].set_title('SOR Solution', fontsize=20)
+    #plt.matshow(analyticSolution)
+    plt.show()
+
+
+
+# plt.matshow(M)
+# plt.show()
