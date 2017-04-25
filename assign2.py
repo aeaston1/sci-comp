@@ -7,14 +7,14 @@ import pandas # for printing
 
 # Number of discrete time and spatial steps
 N= 100
-T = 100
-C, delta_x, delta_t = 1, 1/float(N), 0.01
+T = 1000
+C, delta_x, delta_t = 1, 1/float(N), 1/float(T)
 
-# The transversal string position for all x-values at t = 0
-# Question 1
-def t0(n):
-    x = n/float(N)
-    return math.sin(2*math.pi*x)
+# # The transversal string position for all x-values at t = 0
+# # Question 1
+# def t0(n):
+#     x = n/float(N)
+#     return math.sin(2*math.pi*x)
 
 # # The transversal string position for all x-values at t = 0
 # # Question 2
@@ -22,13 +22,13 @@ def t0(n):
 #     x = n/float(N)
 #     return math.sin(5*math.pi*x)
 
-# # The transversal string position for all x-values at t = 0
-# # Question 3
-# def t0(n):
-#     x = n/float(N)
-#     if x <= 1/5 or x >= 2/5:
-#         return 0
-#     return math.sin(5*math.pi*x)
+# The transversal string position for all x-values at t = 0
+# Question 3
+def t0(n):
+    x = n/float(N)
+    if x <= 1/5 or x >= 2/5:
+        return 0
+    return math.sin(5*math.pi*x)
 
 # The first time derivative (transversal speed)
 # for all x-values at t = 0
@@ -51,7 +51,9 @@ for t in range(T-2):
             D*(M[t-1,n-1]-2*M[t-1,n]+M[t-1,n+1]) \
             + 2*M[t-1,n] - M[t-2,n]
         )
-print(pandas.DataFrame(M))
+# print(pandas.DataFrame(M))
 
-plt.matshow(M)
+times = [150*i for i in range(6)]
+[plt.plot(M[t]) for t in times]
+plt.legend(["Solution for t ="+str(t*delta_t) for t in times])
 plt.show()
