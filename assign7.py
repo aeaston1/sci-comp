@@ -164,16 +164,20 @@ if __name__ == "__main__":
     print(optimalOmega)
     '''
     # Question J
-    #JacobiSolution = Jacobi(newMatrix(), epsilon, 40,45,40,45)[0]
+    fig, axarr = plt.subplots(ncols=3, nrows=1)
+
+    JacobiSolution = Jacobi(newMatrix(), epsilon, 40,45,40,45)[0]
     GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon, 40,45,40,45)[0]
-    #SORSolution = SOR(newMatrix(), epsilon, omega, 40,45,40,45)[0]
+    SORSolution = SOR(newMatrix(), epsilon, omega, 40,45,40,45)[0]
     #analyticSolution = [analytic(y) for y in range(N+1)]
 
-    #plt.matshow(JacobiSolution)
-    plt.matshow(GaussSeidelSolution)
-    #plt.matshow(SORSolution)
+    axarr[0].matshow(JacobiSolution)
+    axarr[0].set_title('Jacobi Solution', fontsize=20)
+    axarr[1].matshow(GaussSeidelSolution)
+    axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
+    axarr[2].matshow(SORSolution)
+    axarr[2].set_title('SOR Solution', fontsize=20)
     #plt.matshow(analyticSolution)
-    #plt.legend(['Jacobi','Gauss-Seidel','SOR','Analytic solution'])
     plt.show()
 
 
