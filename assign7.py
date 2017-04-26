@@ -169,18 +169,16 @@ if __name__ == "__main__":
     JacobiSolution = Jacobi(newMatrix(), epsilon, 40,45,40,45)[0]
     GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon, 40,45,40,45)[0]
     SORSolution = SOR(newMatrix(), epsilon, omega, 40,45,40,45)[0]
-    #analyticSolution = [analytic(y) for y in range(N+1)]
 
     axarr[0].matshow(JacobiSolution)
     axarr[0].set_title('Jacobi Solution', fontsize=20)
+    axarr[0].xaxis.set_ticks_position('bottom')
     axarr[1].matshow(GaussSeidelSolution)
     axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
+    axarr[1].xaxis.set_ticks_position('bottom')
     axarr[2].matshow(SORSolution)
     axarr[2].set_title('SOR Solution', fontsize=20)
-    #plt.matshow(analyticSolution)
+    axarr[2].xaxis.set_ticks_position('bottom')
+    plt.setp([a.get_xticklabels() for a in axarr[2, :]], fontsize=20)
+    plt.setp([a.get_yticklabels() for a in axarr[:, 0]], fontsize=20)
     plt.show()
-
-
-
-# plt.matshow(M)
-# plt.show()
