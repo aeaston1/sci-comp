@@ -63,87 +63,69 @@ def simulation(totT, newM, M):
 
         if t == 0:
             simulated0 = copy.deepcopy(newM)
-        if t == 1:
-            simulated1 = copy.deepcopy(newM)
-        if t == 10:
-            simulated10 = copy.deepcopy(newM)
         if t == 100:
             simulated100 = copy.deepcopy(newM)
-        if t == 500:
-            simulated500 = copy.deepcopy(newM)
         if t == 1000:
             simulated1000 = copy.deepcopy(newM)
         if t == 10000:
             simulated10000 = copy.deepcopy(newM)
-        # if t == 100000:
-        #     simulated100000 = copy.deepcopy(newM)
         M = copy.deepcopy(newM)
 
-    return M, simulated0, simulated1, simulated10, simulated100, simulated500, \
-    simulated1000, simulated10000
+    return M, simulated0, simulated100, simulated1000, simulated10000
 if __name__ == "__main__":
     # plot for part E
     print("Starting loop...")
     start = time.time()
-    M, simulated0, simulated1, simulated10, simulated100, simulated500, \
-    simulated1000, simulated10000 = simulation(100000, newM, M)
+    M, simulated0, simulated100, simulated1000, \
+    simulated10000 = simulation(100000, newM, M)
     end = time.time()
     print(end-start)
     M = np.array(M)
     simulated0 = np.array(simulated0)
-    simulated1 = np.array(simulated1)
-    simulated10 = np.array(simulated10)
     simulated100 = np.array(simulated100)
-    simulated500 = np.array(simulated500)
     simulated1000 = np.array(simulated1000)
     simulated10000 = np.array(simulated10000)
-    # simulated100000 = np.array(simulated100000)
+
     x = np.linspace(0,101,N+1)
     fig, ax = plt.subplots()
     analytic, = ax.plot(x, analytic_list, label='Analytic Solution', linewidth=2)
-    simulated0, = ax.plot(x, simulated0[0], label='Simulation t=0', linewidth=2)
-    # simulated1, = ax.plot(x, simulated1[0], label='Simulation t=0.01', linewidth=2)
-    # simulated10, = ax.plot(x, simulated10[0], label='Simulation t=0.1', linewidth=2)
-    simulated100, = ax.plot(x, simulated100[0], label='Simulation t=1', linewidth=2)
-    # simulated500, = ax.plot(x, simulated500[0], label='Simulateion t=5', linewidth=2)
-    simulated1000, = ax.plot(x, simulated1000[0], label='Simulation t=10', linewidth=2)
-    simulated10000, = ax.plot(x, simulated10000[0], label='Simulation t=100', linewidth=2)
-    # simulated100000, = ax.plot(x, simulated100000[0], label='Simulation t=1000', linewidth=2)
-    simulated1000000, = ax.plot(x, M[0], label='Simulation t=1000', linewidth=2)
+    sim0, = ax.plot(x, simulated0[0], label='Simulation t=0', linewidth=2)
+    sim100, = ax.plot(x, simulated100[0], label='Simulation t=1', linewidth=2)
+    sim1000, = ax.plot(x, simulated1000[0], label='Simulation t=10', linewidth=2)
+    sim10000, = ax.plot(x, simulated10000[0], label='Simulation t=100', linewidth=2)
+    sim1000000, = ax.plot(x, M[0], label='Simulation t=1000', linewidth=2)
     ax.legend(loc='upper left', fontsize=20)
     plt.xlabel("x value", fontsize=20)
     plt.ylabel("Concentration", fontsize=20)
 
     plt.plot()
 
-    '''
+
     # array rotations
     M = np.rot90(M)
-    simulated500 = np.rot90(simulated500)
+    simulated10000 = np.rot90(simulated10000)
+    simulated1000 = np.rot90(simulated1000)
     simulated100 = np.rot90(simulated100)
-    simulated10 = np.rot90(simulated10)
-    simulated1 = np.rot90(simulated1)
-    simulated0 = np.rot90(simulated0)
     # plots for part F
-    fig, axarr = plt.subplots(ncols=2, nrows=3)
+    fig, axarr = plt.subplots(ncols=2, nrows=2)
     axarr[0,0].matshow(M)
-    axarr[0,0].set_title("t = 1",fontsize=30)
-    axarr[0,1].matshow(simulated500)
-    axarr[0,1].set_title("t = 0.5",fontsize=30)
-    axarr[1,0].matshow(simulated100)
-    axarr[1,0].set_title("t = 0.1",fontsize=30)
-    axarr[1,1].matshow(simulated10)
-    axarr[1,1].set_title("t = 0.01",fontsize=30)
-    axarr[2,0].matshow(simulated1)
-    axarr[2,0].set_title("t = 0.001",fontsize=30)
-    axarr[2,0].xaxis.set_ticks_position('bottom')
-    axarr[2,1].matshow(simulated0)
-    axarr[2,1].set_title("t = 0",fontsize=30)
-    axarr[2,1].xaxis.set_ticks_position('bottom')
+    axarr[0,0].set_title("t = 1000",fontsize=30)
+    axarr[0,1].matshow(simulated10000)
+    axarr[0,1].set_title("t = 100",fontsize=30)
+    axarr[1,0].matshow(simulated1000)
+    axarr[1,0].set_title("t = 10",fontsize=30)
+    axarr[1,0].xaxis.set_ticks_position('bottom')
+    axarr[1,1].matshow(simulated100)
+    axarr[1,1].set_title("t = 1",fontsize=30)
+    axarr[1,1].xaxis.set_ticks_position('bottom')
+    axarr[1,0].set_xlabel("x value", fontsize=20)
+    axarr[1,1].set_xlabel("x value", fontsize=20)
+    axarr[1,0].set_ylabel("y value", fontsize=20)
+    axarr[0,0].set_ylabel("y value", fontsize=20)
+
     plt.setp([a.get_xticklabels() for a in axarr[0, :]], visible=False)
-    plt.setp([a.get_xticklabels() for a in axarr[1, :]], visible=False)
-    plt.setp([a.get_xticklabels() for a in axarr[2, :]], fontsize=20)
+    plt.setp([a.get_xticklabels() for a in axarr[1, :]], fontsize=20)
     plt.setp([a.get_yticklabels() for a in axarr[:, 0]], fontsize=20)
     plt.setp([a.get_yticklabels() for a in axarr[:, 1]], visible=False)
-    '''
+
     plt.show()
