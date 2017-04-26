@@ -155,6 +155,7 @@ if __name__ == "__main__":
     # plt.show()
 
     # Question I
+    '''
     def minSOR(omega):
         print(omega)
         M = newMatrix()
@@ -169,12 +170,12 @@ if __name__ == "__main__":
         res = minimize(minSOR, 1.8, method='nelder-mead')
         optimalOmega = res.x
         results.append(optimalOmega)
-        
+
     plt.plot(sizes,results)
     plt.xlabel('Grid size N')
     plt.ylabel('Optimal $\omega$-value')
     plt.show()
-
+    '''
     # Question J
     fig, axarr = plt.subplots(ncols=3, nrows=1)
 
@@ -191,6 +192,10 @@ if __name__ == "__main__":
     axarr[2].matshow(SORSolution)
     axarr[2].set_title('SOR Solution', fontsize=20)
     axarr[2].xaxis.set_ticks_position('bottom')
-    plt.setp([a.get_xticklabels() for a in axarr[2, :]], fontsize=20)
-    plt.setp([a.get_yticklabels() for a in axarr[:, 0]], fontsize=20)
+    # changing tick labels etc.
+    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==1 or i==2], visible=False)
+    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==0], fontsize=20)
+    plt.setp([a.get_xticklabels() for a in axarr], fontsize=20)
+    #plt.setp(axarr[1].get_xticklabels(). fontsize=20)
+    #plt.setp(axarr[2].get_xticklabels(). fontsize=20)
     plt.show()

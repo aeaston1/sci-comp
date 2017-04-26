@@ -6,6 +6,8 @@ import math
 import pandas # for printing
 import copy
 import numpy as np
+import time
+from numba import jit, autojit
 
 # Set up parameters
 N = 100
@@ -31,29 +33,44 @@ analytic_list = []
 for x in range(0,N+1):
     analytic_list.append(analytic(x/100.0, T/delta_t))
 
-for t in range(1000):
-    for x in range(N+1):
-        for y in range(N-1):
-            y += 1
-            newM[x,y] = M[x,y] + Cons*(
-                M[x-1,y] + M[(x+1)%N,y] + M[x,y-1] + M[x,y+1] - 4*M[x,y]
-                )
-    if t == 0:
-        simulated0 = copy.deepcopy(newM)
-    if t == 1:
-        simulated1 = copy.deepcopy(newM)
-    if t == 10:
-        simulated10 = copy.deepcopy(newM)
-    if t == 100:
-        simulated100 = copy.deepcopy(newM)
-    if t == 500:
-        simulated500 = copy.deepcopy(newM)
 
-    M = copy.deepcopy(newM)
+def simulation(T, newM, M):
+    for t in range(T):
+        for x in range(N+1):
+            for y in range(N-1):
+                y += 1
+                newM[x,y] = M[x,y] + Cons*(
+                    M[x-1,y] + M[(x+1)%N,y] + M[x,y-1] + M[x,y+1] - 4*M[x,y]
+                    )
+        if t == 0:
+            simulated0 = copy.deepcopy(newM)
+        if t == 1:
+            simulated1 = copy.deepcopy(newM)
+        if t == 10:
+            simulated10 = copy.deepcopy(newM)
+        if t == 100:
+            simulated100 = copy.deepcopy(newM)
+        if t == 500:
+            simulated500 = copy.deepcopy(newM)
+        '''
+        if t == 1000:
+            simulated1000 = copy.deepcopy(newM)
+        if t == 10000:
+            simulated10000 = copy.deepcopy(newM)
+        if t == 100000:
+            simulated100000 = copy.deepcopy(newM)
+        '''
+        M = copy.deepcopy(newM)
 
+    return M, simulated0, simulated1, simulated10, simulated100, simulated500
 if __name__ == "__main__":
-# plot for part E
-    '''
+    # plot for part E
+    print("Starting loop...")
+    start = time.time()
+    M, simulated0, simulated1, simulated10, simulated100, simulated500 = simulation(1000, newM, M)
+    end = time.time()
+    print(end-start)
+
     x = np.linspace(0,101,N+1)
     fig, ax = plt.subplots()
     analytic, = ax.plot(x, analytic_list, label='Analytic Solution', linewidth=2)
@@ -61,9 +78,19 @@ if __name__ == "__main__":
     simulated1, = ax.plot(x, simulated1[0], label='Simulation t=0.001', linewidth=2)
     simulated10, = ax.plot(x, simulated10[0], label='Simulation t=0.01', linewidth=2)
     simulated100, = ax.plot(x, simulated100[0], label='Simulation t=0.1', linewidth=2)
-    simulated1000, = ax.plot(x, M[0], label='Simulation t=1', linewidth=2)
-    ax.legend(loc='upper left')
+    simulated500, = ax.plot(x, simulated500[0], label='Simulateion t=0.5', linewidth=2)
+    '''
+    simulated1000, = ax.plot(x, simulated1000[0], label='Simulation t=1', linewidth=2)
+    simulated10000, = ax.plot(x, simulated10000[0], label='Simulation t=10', linewidth=2)
+    simulated100000, = ax.plot(x, simulated100000[0], label='Simulation t=100', linewidth=2)
+    '''
+    simulated1000000, = ax.plot(x, M[0], label='Simulation t=1000', linewidth=2)
+    ax.legend(loc='upper left', fontsize=20)
+    plt.xlabel("x value", fontsize=20)
+    plt.ylabel("y value", fontsize=20)
+
     plt.plot()
+
     '''
     # array rotations
     M = np.rot90(M)
@@ -93,5 +120,5 @@ if __name__ == "__main__":
     plt.setp([a.get_xticklabels() for a in axarr[2, :]], fontsize=20)
     plt.setp([a.get_yticklabels() for a in axarr[:, 0]], fontsize=20)
     plt.setp([a.get_yticklabels() for a in axarr[:, 1]], visible=False)
-
+    '''
     plt.show()
