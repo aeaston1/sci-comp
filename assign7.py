@@ -128,6 +128,8 @@ if __name__ == "__main__":
     # plt.plot(SORSolution[0])
     # plt.plot(analyticSolution)
     # plt.legend(['Jacobi','Gauss-Seidel','SOR','Analytic solution'])
+    # plt.xlabel('y value')
+    # plt.ylabel('solution value')
     # plt.show()
 
     # # Question H
@@ -148,21 +150,31 @@ if __name__ == "__main__":
     # plt.loglog(epsilons, S2)
     # plt.xlim(epsilons[0], epsilons[-1])
     # plt.legend(['Jacobi','Gauss-Seidel','SOR, $\omega = 1.4$','SOR, $\omega = 1.7$'])
+    # plt.xlabel('$\epsilon$ -value')
+    # plt.ylabel('number of iterations')
     # plt.show()
 
     # Question I
-    '''
     def minSOR(omega):
         print(omega)
         M = newMatrix()
-        k = SOR(M, 0.0001, omega[0])[1]
-        print(k)
+        k = SOR(M, 0.001, omega[0])[1]
         return k
 
-    res = minimize(minSOR, 1.5)
-    optimalOmega = res.x
-    print(optimalOmega)
-    '''
+    results = []
+    sizes = [50, 60, 70, 80, 100]
+    for N in sizes:
+        coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
+        Cons, delta_xy = 1/4.0, 1/float(N)
+        res = minimize(minSOR, 1.8, method='nelder-mead')
+        optimalOmega = res.x
+        results.append(optimalOmega)
+        
+    plt.plot(sizes,results)
+    plt.xlabel('Grid size N')
+    plt.ylabel('Optimal $\omega$-value')
+    plt.show()
+
     # Question J
     fig, axarr = plt.subplots(ncols=3, nrows=1)
 
