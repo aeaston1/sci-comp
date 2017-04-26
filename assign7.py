@@ -8,10 +8,10 @@ import pandas # for printing
 import copy
 
 # Set up parameters
-N = 50
+N = 65
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 Cons, delta_xy = 1/4.0, 1/float(N)
-maxiters = 100000
+maxiters = 2000
 epsilon = 0.0001 # Break-off value for convergence
 omega = 1.7 # For SOR algoritm
 
@@ -26,22 +26,18 @@ def newMatrix():
 def analytic(y):
     return y*delta_xy
 
-def Jacobi(M, epsilon, x1=None, x2=None, y1=None, y2=None):
+def Jacobi(M, epsilon, x1=0, x2=0, y1=0, y2=0):
     k = 0
     newM = copy.deepcopy(M)
     while (k < maxiters):
         k += 1
 
         for x, y in coordinates:
+            if x in np.arange(x1, x2) and y in np.arange(y1,y2):
+                continue
             newM[x,y] = Cons*(
                 M[x-1,y] + M[(x+1)%N,y] + M[x,y-1] + M[x,y+1]
                 )
-        if x1 and x2 and y1 and y2:
-            newM = add_blocks(x1,x2,y1,y2, newM)
-        # adding a block between defined x and y values
-        #for i in range(x1,x2):
-        #    for j in range(y1,y2):
-        #        newM[i, j] = 0
 
         # Determine if system is converged
         difference = abs(M - newM)
@@ -59,20 +55,18 @@ def Jacobi(M, epsilon, x1=None, x2=None, y1=None, y2=None):
 
     return M, k
 
-def GaussSeidel(M, epsilon, x1=None, x2=None, y1=None, y2=None):
+def GaussSeidel(M, epsilon, x1=0, x2=0, y1=0, y2=0):
     k  = 0
     while (k < maxiters):
         c = 0
         k += 1
 
         for x, y in coordinates:
+            if x in np.arange(x1, x2) and y in np.arange(y1,y2):
+                continue
             newValue = Cons*(M[x-1,y] + M[(x+1)%N,y] + M[x,y-1] + M[x,y+1])
             delta = abs(newValue - M[x,y])
             M[x,y] = newValue
-
-        #adding blocks
-        if x1 and x2 and y1 and y2:
-            M = add_blocks(x1,x2,y1,y2, M)
 
         # Determine if system is converged
             if delta > epsilon:
@@ -83,37 +77,29 @@ def GaussSeidel(M, epsilon, x1=None, x2=None, y1=None, y2=None):
 
     return M, k
 
-def SOR(M, epsilon, omega, x1=None, x2=None, y1=None, y2=None):
+def SOR(M, epsilon, omega, x1=0, x2=0, y1=0, y2=0):
     k  = 0
     while (k < maxiters):
         c = 0
         k += 1
 
         for x, y in coordinates:
+            if x in np.arange(x1, x2) and y in np.arange(y1,y2):
+                continue
             newValue = omega/4.0*(M[x-1,y] + M[(x+1)%N,y] + M[x,y-1] + M[x,y+1]) \
                             + (1 - omega)*M[x,y]
             delta = abs(newValue - M[x,y])
             M[x,y] = newValue
 
-        #adding blocks
-        if x1 and x2 and y1 and y2:
-            M = add_blocks(x1,x2,y1,y2, M)
-
-        # Determine if system is converged
+            # Determine if system is converged
             if delta > epsilon:
                 c += 1
+
         if c == 0:
             print("SOR terminated in iteration ",k) #add timer?
             break
 
     return M, k
-
-def add_blocks(x1, x2, y1, y2, M):
-    for x in range(x1, x2):
-        for y in range(y1,y2):
-            M[x,y] = 0
-            newM = copy.deepcopy(M)
-    return newM
 
 
 if __name__ == "__main__":
@@ -154,7 +140,7 @@ if __name__ == "__main__":
     # plt.ylabel('number of iterations')
     # plt.show()
 
-    # Question I
+    # # Question I
     # def minSOR(omega):
     #     print(omega)
     #     M = newMatrix()
@@ -175,26 +161,46 @@ if __name__ == "__main__":
     # plt.ylabel('Optimal $\omega$-value')
     # plt.show()
 
-    # Question J
-    fig, axarr = plt.subplots(ncols=3, nrows=1)
-
-    JacobiSolution = Jacobi(newMatrix(), epsilon, 40,45,40,45)[0]
-    GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon, 40,45,40,45)[0]
-    SORSolution = SOR(newMatrix(), epsilon, omega, 40,45,40,45)[0]
-
-    axarr[0].matshow(JacobiSolution)
-    axarr[0].set_title('Jacobi Solution', fontsize=20)
-    axarr[0].xaxis.set_ticks_position('bottom')
-    axarr[1].matshow(GaussSeidelSolution)
-    axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
-    axarr[1].xaxis.set_ticks_position('bottom')
-    axarr[2].matshow(SORSolution)
-    axarr[2].set_title('SOR Solution', fontsize=20)
-    axarr[2].xaxis.set_ticks_position('bottom')
+    # # Question J
+    # fig, axarr = plt.subplots(ncols=3, nrows=1)
+    #
+    # JacobiSolution = Jacobi(newMatrix(), epsilon, 25,45,20,45)[0]
+    # GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon, 25,45,20,45)[0]
+    # SORSolution = SOR(newMatrix(), epsilon, omega, 25,45,20,45)[0]
+    #
+    # axarr[0].matshow(JacobiSolution)
+    # axarr[0].set_title('Jacobi Solution', fontsize=20)
+    # axarr[0].xaxis.set_ticks_position('bottom')
+    # axarr[1].matshow(GaussSeidelSolution)
+    # axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
+    # axarr[1].xaxis.set_ticks_position('bottom')
+    # axarr[2].matshow(SORSolution)
+    # axarr[2].set_title('SOR Solution', fontsize=20)
+    # axarr[2].xaxis.set_ticks_position('bottom')
+    #
     # changing tick labels etc.
-    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==1 or i==2], visible=False)
-    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==0], fontsize=20)
-    plt.setp([a.get_xticklabels() for a in axarr], fontsize=20)
-    #plt.setp(axarr[1].get_xticklabels(). fontsize=20)
-    #plt.setp(axarr[2].get_xticklabels(). fontsize=20)
-    plt.show()
+    # plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==1 or i==2], visible=False)
+    # plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==0], fontsize=20)
+    # plt.setp([a.get_xticklabels() for a in axarr], fontsize=20)
+    # plt.show()
+
+    def minBoxSOR(omega):
+        print(omega)
+        M = newMatrix()
+        k = SOR(M, 0.0001, omega[0], 40,45,40,45)[1]
+        return k
+
+    def minSOR(omega):
+        print(omega)
+        M = newMatrix()
+        k = SOR(M, 0.0001, omega[0])[1]
+        return k
+
+    Cons, delta_xy = 1/4.0, 1/float(N)
+    resBox = minimize(minBoxSOR, 1.8, method='nelder-mead')
+    res = minimize(minSOR, 1.8, method='nelder-mead')
+    optimalOmega = res.x
+    optimalOmegaBox = res.x
+
+    print("opt. omega: ",optimalOmega)
+    print("opt. omega box: ",optimalOmegaBox)
