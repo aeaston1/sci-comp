@@ -161,46 +161,50 @@ if __name__ == "__main__":
     # plt.ylabel('Optimal $\omega$-value')
     # plt.show()
 
-    # # Question J
-    # fig, axarr = plt.subplots(ncols=3, nrows=1)
-    #
-    # JacobiSolution = Jacobi(newMatrix(), epsilon, 25,45,20,45)[0]
-    # GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon, 25,45,20,45)[0]
-    # SORSolution = SOR(newMatrix(), epsilon, omega, 25,45,20,45)[0]
-    #
-    # axarr[0].matshow(JacobiSolution)
-    # axarr[0].set_title('Jacobi Solution', fontsize=20)
-    # axarr[0].xaxis.set_ticks_position('bottom')
-    # axarr[1].matshow(GaussSeidelSolution)
-    # axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
-    # axarr[1].xaxis.set_ticks_position('bottom')
-    # axarr[2].matshow(SORSolution)
-    # axarr[2].set_title('SOR Solution', fontsize=20)
-    # axarr[2].xaxis.set_ticks_position('bottom')
-    #
+    # Question J
+    fig, axarr = plt.subplots(ncols=3, nrows=1)
+
+    JacobiSolution = Jacobi(newMatrix(), epsilon)[0]
+    GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon)[0]
+    SORSolution = SOR(newMatrix(), epsilon, omega)[0]
+
+    axarr[0].matshow(JacobiSolution)
+    axarr[0].set_title('Jacobi Solution', fontsize=20)
+    axarr[0].xaxis.set_ticks_position('bottom')
+    axarr[1].matshow(GaussSeidelSolution)
+    axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
+    axarr[1].xaxis.set_ticks_position('bottom')
+    axarr[2].matshow(SORSolution)
+    axarr[2].set_title('SOR Solution', fontsize=20)
+    axarr[2].xaxis.set_ticks_position('bottom')
+
+    axarr[0].set_ylabel("y value", fontsize=20)
+    axarr[0].set_xlabel("x value", fontsize=20)
+    axarr[1].set_xlabel("x value", fontsize=20)
+    axarr[2].set_xlabel("x value", fontsize=20)
     # changing tick labels etc.
-    # plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==1 or i==2], visible=False)
-    # plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==0], fontsize=20)
-    # plt.setp([a.get_xticklabels() for a in axarr], fontsize=20)
-    # plt.show()
+    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==1 or i==2], visible=False)
+    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==0], fontsize=20)
+    plt.setp([a.get_xticklabels() for a in axarr], fontsize=20)
+    plt.show()
 
-    def minBoxSOR(omega):
-        print(omega)
-        M = newMatrix()
-        k = SOR(M, 0.0001, omega[0], 40,45,40,45)[1]
-        return k
-
-    def minSOR(omega):
-        print(omega)
-        M = newMatrix()
-        k = SOR(M, 0.0001, omega[0])[1]
-        return k
-
-    Cons, delta_xy = 1/4.0, 1/float(N)
-    resBox = minimize(minBoxSOR, 1.8, method='nelder-mead')
-    res = minimize(minSOR, 1.8, method='nelder-mead')
-    optimalOmega = res.x
-    optimalOmegaBox = res.x
-
-    print("opt. omega: ",optimalOmega)
-    print("opt. omega box: ",optimalOmegaBox)
+    # def minBoxSOR(omega):
+    #     print(omega)
+    #     M = newMatrix()
+    #     k = SOR(M, 0.0001, omega[0], 40,45,40,45)[1]
+    #     return k
+    #
+    # def minSOR(omega):
+    #     print(omega)
+    #     M = newMatrix()
+    #     k = SOR(M, 0.0001, omega[0])[1]
+    #     return k
+    #
+    # Cons, delta_xy = 1/4.0, 1/float(N)
+    # resBox = minimize(minBoxSOR, 1.8, method='nelder-mead')
+    # res = minimize(minSOR, 1.8, method='nelder-mead')
+    # optimalOmega = res.x
+    # optimalOmegaBox = res.x
+    #
+    # print("opt. omega: ",optimalOmega)
+    # print("opt. omega box: ",optimalOmegaBox)
