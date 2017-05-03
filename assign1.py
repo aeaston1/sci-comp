@@ -2,17 +2,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-import pandas # for printing
+import pandas # for printing matrices
 import copy
-from  matplotlib.animation import FuncAnimation
 
 # Set up parameters
-N = 10
+N = 256
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 delta_xy = 1/float(N)
-maxiters = 150
-growthSteps = 15
-eden = 1.0
+maxiters = 2000
+growthSteps = 6001
 epsilon = 0.005 # Break-off value for convergence
 omega = 1.0 # For SOR algoritm
 
@@ -47,9 +45,6 @@ def newSeed():
     # New seed is placed on top of sink in the middle
     O = np.zeros((N+1,N+1))
     O[int(N/2.0),1] = 1
-    # O[int(N/2.0)+1,1] = 1
-    # O[int(N/2.0)+2,1] = 1
-    # O[int(N/2.0)+2,2] = 1
     return np.matrix(O)
 
 def SOR(M, O, epsilon, omega):
@@ -62,10 +57,10 @@ def SOR(M, O, epsilon, omega):
         newM = setSinksSources(newM, O)
 
         # Check is algorithm is converged
-        D = abs(newM - M)
-        D[abs(D) < epsilon] = 0
+        D = np.abs(newM - M)
+        D[np.abs(D) < epsilon] = 0
         if np.sum(D) == 0:
-            print("SOR terminated in iteration ",k) #add timer?
+            # print("SOR terminated in iteration ",k) #add timer?
             break
 
         # Prepare for next iteration
@@ -75,7 +70,7 @@ def SOR(M, O, epsilon, omega):
 
 def doGrowthStep(M, O):
     # Get growth sites
-    S = A*O + O*A
+    S = A*O + O*A + B*O
     S[S>0] = 1
     S -= O
 
@@ -89,47 +84,27 @@ def doGrowthStep(M, O):
             if np.random.random() < N[x,y]:
                 O[x,y] = 1
                 M[x,y] = 0
-            # S[x,y] = np.sum([M[i,j]
-            #             for i in np.arange(x-1,(x+2)%N)
-            #             for j in np.arange(y-1,y+2)
-            #             ])
 
     return M, O
 
-
-
-# def init():
-#     plot.set_data(data[0])
-#     return plot
-#
-# def update(j):
-#     plot.set_data(data[j])
-#     return [plot]
-
 if __name__ == "__main__":
     # Question K
-    O = newSeed()
-    M = newMatrix(O)
-    for g in np.arange(growthSteps):
-        plt.matshow(M)
+    edens = [0.5, 1.0, 1.5, 2.0]
+
+    for eden in edens:
+        O = newSeed()
+        M = newMatrix(O)
+        for g in np.arange(growthSteps):
+            if g%200 == 0:
+                print('Growthstep ',g,' for parameter ',eden)
+            M, k = SOR(M, O, epsilon, omega)
+            M, O = doGrowthStep(M, O)
+        q = 1*np.max(M)
+        P = M + q*O
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plot = ax.matshow(P)
+        ax.set_xlabel('y')
+        ax.set_ylabel('x')
+        fig.colorbar(plot)
         plt.show()
-        M, k = SOR(M, O, epsilon, omega)
-        M, O = doGrowthStep(M, O)
-    plt.matshow(M)
-    plt.show()
-    #
-    # n_frames = 3 #Numero de ficheros que hemos generado
-    # data = np.empty(n_frames, dtype=object) #Almacena los datos
-    #
-    # #Leer todos los datos
-    # for k in range(n_frames):
-    #     data[k] = np.loadtxt("frame"+str(k))
-    #
-    #
-    # fig = plt.figure()
-    # plot =plt.imshow(data[0])
-    #
-    #
-    # anim = FuncAnimation(fig, update, init_func = init, frames=n_frames, interval = 30, blit=True)
-    #
-    # plt.show()
