@@ -6,13 +6,13 @@ import pandas # for printing matrices
 import copy
 
 # Set up parameters
-N = 256
+N = 255 # N must be uneven for checkboard parrallelization
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 delta_xy = 1/float(N)
 maxiters = 2000
 growthSteps = 6001
 epsilon = 0.005 # Break-off value for convergence
-omega = 1.0 # For SOR algoritm
+omega = 1.5 # For SOR algoritm
 
 # A is a matrix to quickly add all neighbours
 a = np.diag([1 for n in np.arange(N)],1)
@@ -32,6 +32,13 @@ def newMatrix(O):
         M[:,y] = analytic(y)
     M = setSinksSources(M, O)
     return np.matrix(M)
+
+def checkerboard(N):
+    # Code from http://stackoverflow.com/questions/2169478/how-to-make-a-checkerboard-in-numpy
+    N = int(N/2)
+    re = np.r_[N*[0, 1]]              # even-numbered rows
+    ro = np.r_[N*[1, 0]]              # odd-numbered rows
+    return np.row_stack(N*(re, ro))
 
 def setSinksSources(M, O):
     # Set growing object as sinks
@@ -53,8 +60,11 @@ def SOR(M, O, epsilon, omega):
         k += 1
 
         # Execute iteration step and reset sinks and sources
-        newM = (omega/4)*(A*M + M*A + B*M) + (1-omega)*M
-        newM = setSinksSources(newM, O)
+        M1 = np.multiply(M, C1)
+        M2 = np.multiply(M, C2)
+        S1 = (omega/4)*(A*M1 + M1*A + B*M1) + (1-omega)*M2
+        S2 = (omega/4)*(A*S1 + S1*A + B*S1) + (1-omega)*M1
+        newM = setSinksSources(S1 + S2, O)
 
         # Check is algorithm is converged
         D = np.abs(newM - M)
@@ -89,7 +99,9 @@ def doGrowthStep(M, O):
 
 if __name__ == "__main__":
     # Question K
-    edens = [0.5, 1.0, 1.5, 2.0]
+    edens = [1.2]
+    C1 = checkerboard(N+1)
+    C2 = 1 - C1
 
     for eden in edens:
         O = newSeed()
