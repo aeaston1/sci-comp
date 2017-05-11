@@ -30,7 +30,7 @@ coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 T = 100 #number of steps in interval 0->1
 Cons_u = D_u_i*(del_t/float(del_x**2))
 Cons_v = D_v_i*(del_t/float(del_x**2))
-prob_vtop = 0.9 #probability for V to decay in to P
+prob_vtop = 0.9 #probability for V to decay in to P. I.e. 0.9 means 10% chance
 
 def fill_U(u):
     return np.full((n_rows_i+1, n_cols_i+1), u, dtype=float)
