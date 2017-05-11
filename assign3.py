@@ -9,45 +9,43 @@ import copy
 import time
 from numba import jit, autojit
 import random
+import warnings
 
 #intiail conditions, denoted with "_i"
 del_t = 1
 del_x = 1
 D_u_i = 0.16
 D_v_i = 0.08
-f_i = 0.035
-k_i = 0.06
+f_i = 0.035 #rate at which U is supplied
+k_i = 0.16 #this plus f is rate at which V decays
 u_i = 0.5 #initially everywhere in the system
 v_i = 0.25 #intialy in a small square in the centre of the system 0 elsewhere
 p_i = 0 #initialise this to zero
-n_rows_i = 100 #number of rows
-n_cols_i = 100 #number of columns
-Res = np.zeros((n_rows_i, n_cols_i), dtype=float)
-P = np.zeros((n_rows_i, n_cols_i), dtype=float)
-timesteps = 2
-N = 100
+N = 100 #square size of grid
+Res = np.zeros((N, N), dtype=float)
+P = np.zeros((N, N), dtype=float)
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 T = 100 #number of steps in interval 0->1
 Cons_u = D_u_i*(del_t/float(del_x**2))
 Cons_v = D_v_i*(del_t/float(del_x**2))
-prob_vtop = 0.9 #probability for V to decay in to P. I.e. 0.9 means 10% chance
+prob_vtop = 0.80 #probability for V to decay in to P. I.e. 0.9 means 10% chance
 
 def fill_U(u):
-    return np.full((n_rows_i+1, n_cols_i+1), u, dtype=float)
+    return np.full((N+1, N+1), u, dtype=float)
 
 def fill_V(v):
     #create a square of chemical in the centre of the square
-    V = np.zeros((n_rows_i+1, n_cols_i+1), dtype=float)
-    for i in range(int(n_rows_i/2 - 2), int(n_rows_i/2 + 2)):
-        for j in range(int(n_cols_i/2 - 2), int(n_cols_i/2 + 2)):
+    V = np.zeros((N+1, N+1), dtype=float)
+    for i in range(int(N/2 - 2), int(N/2 + 2)):
+        for j in range(int(N/2 - 2), int(N/2 + 2)):
             V[i,j] = v
     return V
 
 def fill_UV(u,v):
-    for i in range(n_rows_i):
-        for j in range(n_cols_i):
-            if i >= (int(n_rows_i/2 -2)) and i <= (int(n_rows_i/2 + 2)):
-                if j >= (int(n_cols_i/2 - 2)) and j <= (int(n_cols_i/2 + 2)):
+    for i in range(N):
+        for j in range(N):
+            if i >= (int(N/2 -2)) and i <= (int(N/2 + 2)):
+                if j >= (int(N/2 - 2)) and j <= (int(N/2 + 2)):
                     Res[i][j] = np.array[(u,v)]
                 else:
                     continue
@@ -120,21 +118,26 @@ def grayscott_v(x,y,M_u,M_v):
 def tridiag(a, b, c, k1=-1, k2=0, k3=1):
     return np.diag(a, k1) + np.diag(b, k2) + np.diag(c, k3)
 
-def simulation(totT, newu, u, Consu, newv, v, Consv):
+def simulation(totT, mat_u, newu, u, Consu, mat_v, newv, v, Consv):
     for t in np.arange(totT):
-        newu = Consu*(TD*u+u*TD + Boundary*u) + (1-4*Consu)*u #- (u * v**2 + (f_i * (1 - u)))
-        newv = Consv*(TD*v+v*TD + Boundary*v) + (1-4*Consv)*v #+ (u * v**2 - (f_i + k_i) * v)
-        u = copy.deepcopy(newu)
-        v = copy.deepcopy(newv)
+        newu = Consu*(TD*mat_u+mat_u*TD + Boundary*mat_u) + (1-4*Consu)*u \
+        - (u * np.square(v) + (f_i * (1.0 - u)))
+        newv = Consv*(TD*mat_v+mat_v*TD + Boundary*mat_v) + (1-4*Consv)*v \
+        + (u * np.square(v) - v * (f_i + k_i))
+        mat_u = copy.deepcopy(newu)
+        mat_v = copy.deepcopy(newv)
+        u = np.array(newu)
+        v = np.array(newv)
 
-        v[v.nonzero()] = ((2/3) * v[v.nonzero()]) + ((1/3) * u[v.nonzero()])
-        # probability for v to decay in to p
-        rand_arr = np.random.rand(v.shape[0],v.shape[1])
-        prob_vtop_arr = np.empty([v.shape[0],v.shape[1]])
-        prob_vtop_arr.fill(prob_vtop)
-        #compare the probability array with the rand array to find the v values to remove
-        bool_arr = np.greater(rand_arr, prob_vtop_arr)
-        v[bool_arr] = 0.0
+        # v[v.nonzero()] = ((2/3) * v[v.nonzero()]) + ((1/3) * u[v.nonzero()])
+        # # probability for v to decay in to p
+        # rand_arr = np.random.rand(v.shape[0],v.shape[1])
+        # prob_vtop_arr = np.empty([v.shape[0],v.shape[1]])
+        # prob_vtop_arr.fill(prob_vtop)
+        # #compare the probability array with the rand array to find the v values to remove
+        # bool_arr = np.greater(rand_arr, prob_vtop_arr)
+        # v[bool_arr] = 0.0
+
     return u, v
 
 
@@ -150,7 +153,7 @@ if __name__ == "__main__":
     # U = utime(del_t, D_u_i, U, V, f_i)
     # V = vtime(del_t, D_v_i, U, V, f_i, k_i)
     #
-    # for t in range(timesteps):
+    # for t in range(T):
     #     U = utime(del_t, D_u_i, U[0][0], V[0][0], f_i)
     #     V = vtime(del_t, D_v_i, U[0][0], V[0][0], f_i, k_i)
     #             V[i,j] = v_time(del_t, D_v_i, U, V, f_i, k_i, i, j)
@@ -163,10 +166,10 @@ if __name__ == "__main__":
     P = np.zeros((N,N))
     U = fill_U(u_i)
     V = fill_V(v_i)
-    U = np.matrix(U)
-    V = np.matrix(V)
-    newU = copy.deepcopy(U)
-    newV = copy.deepcopy(V)
+    mat_U = np.matrix(U)
+    mat_V = np.matrix(V)
+    newU = copy.deepcopy(mat_U)
+    newV = copy.deepcopy(mat_V)
     a = [1 for n in np.arange(N)]
     b = [0 for n in np.arange(N+1)]
     TD = tridiag(a,b,a)
@@ -178,14 +181,14 @@ if __name__ == "__main__":
     # Boundary[N,N] = 1
     Boundary = np.matrix(Boundary)
     print("Starting loop...")
+    newU,newV = simulation(T, mat_U, newU, U, Cons_u, mat_V, newV, V, Cons_v)
     start = time.time()
-    newU,newV = simulation(100, newU, U, Cons_u, newV, V, Cons_v)
-    # simV = simulation(1, newV, V, Cons_v)
     end = time.time()
     print(end-start)
 
-    newU = np.array(newU)
-    newV = np.array(newV)
+    # newU = np.array(newU)
+    # newV = np.array(newV)
+
     fig, ax = plt.subplots(2)
     ax[0].matshow(newU)
     ax[1].matshow(newV)
