@@ -8,7 +8,7 @@ import pandas # for printing
 import copy
 import time
 from numba import jit, autojit
-
+import random
 
 #intiail conditions, denoted with "_i"
 del_t = 1
@@ -30,6 +30,7 @@ coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 T = 100 #number of steps in interval 0->1
 Cons_u = D_u_i*(del_t/float(del_x**2))
 Cons_v = D_v_i*(del_t/float(del_x**2))
+prob_vtop = 0.9 #probability for V to decay in to P
 
 def fill_U(u):
     return np.full((n_rows_i+1, n_cols_i+1), u, dtype=float)
@@ -119,7 +120,6 @@ def grayscott_v(x,y,M_u,M_v):
 def tridiag(a, b, c, k1=-1, k2=0, k3=1):
     return np.diag(a, k1) + np.diag(b, k2) + np.diag(c, k3)
 
-
 def simulation(totT, newu, u, Consu, newv, v, Consv):
     for t in np.arange(totT):
         newu = Consu*(TD*u+u*TD + Boundary*u) + (1-4*Consu)*u #- (u * v**2 + (f_i * (1 - u)))
@@ -128,8 +128,14 @@ def simulation(totT, newu, u, Consu, newv, v, Consv):
         v = copy.deepcopy(newv)
 
         v[v.nonzero()] = ((2/3) * v[v.nonzero()]) + ((1/3) * u[v.nonzero()])
-
-    return u,v
+        # probability for v to decay in to p
+        rand_arr = np.random.rand(v.shape[0],v.shape[1])
+        prob_vtop_arr = np.empty([v.shape[0],v.shape[1]])
+        prob_vtop_arr.fill(prob_vtop)
+        #compare the probability array with the rand array to find the v values to remove
+        bool_arr = np.greater(rand_arr, prob_vtop_arr)
+        v[bool_arr] = 0.0
+    return u, v
 
 
 if __name__ == "__main__":
