@@ -11,24 +11,35 @@ from numba import jit, autojit
 import random
 import warnings
 
-#intiail conditions, denoted with "_i"
 del_t = 1
 del_x = 1
-D_u_i = 0.16
-D_v_i = 0.08
-f_i = 0.035 #rate at which U is supplied
-k_i = 0.16 #this plus f is rate at which V decays
-u_i = 0.5 #initially everywhere in the system
-v_i = 0.25 #intialy in a small square in the centre of the system 0 elsewhere
-p_i = 0 #initialise this to zero
+d={}
+# parameter sets
+D_u_i1, D_v_i1, f_i1, k_i1, u_i1, v_i1 = 0.16, 0.08, 0.035, 0.16, 0.5, 0.25
+Cons_u1, Cons_v1 = D_u_i1*(del_t/float(del_x**2)), D_v_i1*(del_t/float(del_x**2))
+
+D_u_i2, D_v_i2, f_i2, k_i2, u_i2, v_i2 = 0.16, 0.08, 0.07, 0.32, 0.5, 0.25
+Cons_u2, Cons_v2 = D_u_i2*(del_t/float(del_x**2)), D_v_i2*(del_t/float(del_x**2))
+
+D_u_i3, D_v_i3, f_i3, k_i3, u_i3, v_i3 = 0.16, 0.08, 0.017, 0.08, 0.5, 0.25
+Cons_u3, Cons_v3 = D_u_i3*(del_t/float(del_x**2)), D_v_i3*(del_t/float(del_x**2))
+
+D_u_i4, D_v_i4, f_i4, k_i4, u_i4, v_i4 = 0.16, 0.08, 0.14, 0.64, 0.5, 0.25
+Cons_u4, Cons_v4 = D_u_i4*(del_t/float(del_x**2)), D_v_i4*(del_t/float(del_x**2))
+
+D_u_i5, D_v_i5, f_i5, k_i5, u_i5, v_i5 =  0.16, 0.08, 0.008, 0.04, 0.5, 0.25
+Cons_u5, Cons_v5 = D_u_i5*(del_t/float(del_x**2)), D_v_i5*(del_t/float(del_x**2))
+
+D_u_i6, D_v_i6, f_i6, k_i6, u_i6, v_i6 = 0.16, 0.08, 0.14, 0.16, 0.5, 0.25
+Cons_u6, Cons_v6 = D_u_i6*(del_t/float(del_x**2)), D_v_i6*(del_t/float(del_x**2))
+
+#f_i rate at which U is supplied
+#k_i this plus f is rate at which V decays
+#u_i initially everywhere in the system
+#v_i intialy in a small square in the centre of the system 0 elsewhere
+
 N = 100 #square size of grid
-Res = np.zeros((N, N), dtype=float)
-P = np.zeros((N, N), dtype=float)
-coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
-T = 100 #number of steps in interval 0->1
-Cons_u = D_u_i*(del_t/float(del_x**2))
-Cons_v = D_v_i*(del_t/float(del_x**2))
-prob_vtop = 0.80 #probability for V to decay in to P. I.e. 0.9 means 10% chance
+T = 10 #number of steps in interval 0->1
 
 def fill_U(u):
     return np.full((N+1, N+1), u, dtype=float)
@@ -36,8 +47,8 @@ def fill_U(u):
 def fill_V(v):
     #create a square of chemical in the centre of the square
     V = np.zeros((N+1, N+1), dtype=float)
-    for i in range(int(N/2 - 2), int(N/2 + 2)):
-        for j in range(int(N/2 - 2), int(N/2 + 2)):
+    for i in range(int(N/2 - 5), int(N/2 + 5)):
+        for j in range(int(N/2 - 5), int(N/2 + 5)):
             V[i,j] = v
     return V
 
@@ -87,24 +98,6 @@ def vtime(d_t, D_v, U, V, f, k):
     dv = d_t * ((D_v * hessian(V)) + (np.matmul(U, V_sq)) - ((f + k) * V))
     return dv
 
-###############################################################################
-# Build empty matrix
-# M = np.zeros((N+1,N+1))
-# for n in np.arange(N+1):
-#     M[n,0] = 0
-#     M[n,N] = 1
-# M = np.matrix(M)
-# newM = copy.deepcopy(M)
-# def analytic(x, t):
-#     c = 0
-#     a = 2*math.sqrt(D*t)
-#     for i in np.arange(1000):
-#         c += (math.erfc((1-x+(2*i))/a) - math.erfc((1+x+(2*i))/a))
-#     return c
-# analytic_list = []
-# for x in np.arange(0,N+1):
-#     analytic_list.append(analytic(x/100.0, T/delta_t))
-
 def grayscott_u(x,y,M_u,M_v):
     newU[x,y] = M_u[x,y] + Cons_u*( \
         M_u[x-1,y] + M_u[(x+1)%N,y] + M_u[x,y-1] + M_u[x,y+1] - 4*M_u[x,y]) \
@@ -118,80 +111,65 @@ def grayscott_v(x,y,M_u,M_v):
 def tridiag(a, b, c, k1=-1, k2=0, k3=1):
     return np.diag(a, k1) + np.diag(b, k2) + np.diag(c, k3)
 
-def simulation(totT, mat_u, newu, u, Consu, mat_v, newv, v, Consv):
+def simulation(totT, mat_u, newu, u, Consu, mat_v, newv, v, Consv, f_i, k_i):
     for t in np.arange(totT):
-        newu = Consu*(TD*mat_u+mat_u*TD + Boundary*mat_u) + (1-4*Consu)*u \
-        - (u * np.square(v) + (f_i * (1.0 - u)))
-        newv = Consv*(TD*mat_v+mat_v*TD + Boundary*mat_v) + (1-4*Consv)*v \
-        + (u * np.square(v) - v * (f_i + k_i))
+        newu = Consu*(TD*mat_u+mat_u*TD + Boundary*mat_u)  \
+        - (u * v**2 + (f_i * (1.0 - u)))
+        newv = Consv*(TD*mat_v+mat_v*TD + Boundary*mat_v)  \
+        + (u * v**2 - v * (f_i + k_i))
         mat_u = copy.deepcopy(newu)
         mat_v = copy.deepcopy(newv)
         u = np.array(newu)
         v = np.array(newv)
-
-        # v[v.nonzero()] = ((2/3) * v[v.nonzero()]) + ((1/3) * u[v.nonzero()])
-        # # probability for v to decay in to p
-        # rand_arr = np.random.rand(v.shape[0],v.shape[1])
-        # prob_vtop_arr = np.empty([v.shape[0],v.shape[1]])
-        # prob_vtop_arr.fill(prob_vtop)
-        # #compare the probability array with the rand array to find the v values to remove
-        # bool_arr = np.greater(rand_arr, prob_vtop_arr)
-        # v[bool_arr] = 0.0
-
     return u, v
 
 
 if __name__ == "__main__":
-    # first
-    # fill the U and V arrays with the initial values.
-    # in one time step, react U with V and output to the resultant array
-    # after the first time step the resultant array must be the only array to be worked on
-    # potentially create an array of tuples, one element is the U value and one is the V value
-    #TODO: check out the return dimensions of the hessian function
-    # U = fill_U(u_i)
-    # V = fill_V(v_i)
-    # U = utime(del_t, D_u_i, U, V, f_i)
-    # V = vtime(del_t, D_v_i, U, V, f_i, k_i)
-    #
-    # for t in range(T):
-    #     U = utime(del_t, D_u_i, U[0][0], V[0][0], f_i)
-    #     V = vtime(del_t, D_v_i, U[0][0], V[0][0], f_i, k_i)
-    #             V[i,j] = v_time(del_t, D_v_i, U, V, f_i, k_i, i, j)
-    # fig, ax = plt.subplots(2)
-    # cax0 = ax[0].imshow(U[0][0], interpolation='nearest', cmap=cm.afmhot)
-    # cax1 = ax[1].imshow(V[0][0], interpolation='nearest', cmap=cm.afmhot)
-    # plt.show()
+    #create range of matrices based on range of inputs
+    for x in range(1,7):
+        globals()["U%s" % x] = fill_U(globals()["u_i%s" % x])
+        globals()["V%s" % x] = fill_V(globals()["v_i%s" % x])
+        globals()["mat_U%s" % x] = np.matrix(globals()["U%s" % x])
+        globals()["mat_V%s" % x] = np.matrix(globals()["V%s" % x])
+        globals()["newU%s" % x] = copy.deepcopy(globals()["mat_U%s" % x])
+        globals()["newV%s" % x] = copy.deepcopy(globals()["mat_V%s" % x])
 
-    #second
-    P = np.zeros((N,N))
-    U = fill_U(u_i)
-    V = fill_V(v_i)
-    mat_U = np.matrix(U)
-    mat_V = np.matrix(V)
-    newU = copy.deepcopy(mat_U)
-    newV = copy.deepcopy(mat_V)
     a = [1 for n in np.arange(N)]
     b = [0 for n in np.arange(N+1)]
     TD = tridiag(a,b,a)
     TD = np.matrix(TD)
-    Boundary = np.zeros((N+1,N+1))
     # Boundary[0,N] = 1
     # Boundary[N,0] = 1
     # Boundary[0,0] = 1
     # Boundary[N,N] = 1
+    Boundary = np.zeros((N+1,N+1))
     Boundary = np.matrix(Boundary)
     print("Starting loop...")
-    newU,newV = simulation(T, mat_U, newU, U, Cons_u, mat_V, newV, V, Cons_v)
+    for x in range(1,7):
+        globals()["newU%s" % x],globals()["newV%s" % x] = \
+        simulation(T, globals()["mat_U%s" % x], \
+        globals()["newU%s" % x], globals()["U%s" % x], \
+        globals()["Cons_u%s" % x], globals()["mat_V%s" % x], \
+        globals()["newV%s" % x], globals()["V%s" % x], globals()["Cons_v%s" % x],\
+        globals()["f_i%s" % x], globals()["k_i%s" % x])
     start = time.time()
     end = time.time()
     print(end-start)
 
-    # newU = np.array(newU)
-    # newV = np.array(newV)
+    fig, ax = plt.subplots(6,2)
+    ax[0,0].matshow(newU1, cmap=plt.cm.gray)
+    ax[0,1].matshow(newV1, cmap=plt.cm.gray)
+    ax[1,0].matshow(newU2, cmap=plt.cm.gray)
+    ax[1,1].matshow(newV2, cmap=plt.cm.gray)
+    ax[2,0].matshow(newU3, cmap=plt.cm.gray)
+    ax[2,1].matshow(newV3, cmap=plt.cm.gray)
+    ax[3,0].matshow(newU4, cmap=plt.cm.gray)
+    ax[3,1].matshow(newV4, cmap=plt.cm.gray)
+    ax[4,0].matshow(newU5, cmap=plt.cm.gray)
+    ax[4,1].matshow(newV5, cmap=plt.cm.gray)
+    ax[5,0].matshow(newU6, cmap=plt.cm.gray)
+    ax[5,1].matshow(newV6, cmap=plt.cm.gray)
 
-    fig, ax = plt.subplots(2)
-    ax[0].matshow(newU)
-    ax[1].matshow(newV)
-    plt.xlabel("x value", fontsize=20)
-    plt.ylabel("y value", fontsize=20)
+    ax[0,0].set_title("U Concentration Grids")
+    ax[0,1].set_title("V Concentration Grids")
     plt.show()
