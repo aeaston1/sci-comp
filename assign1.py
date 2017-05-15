@@ -6,7 +6,7 @@ import pandas # for printing matrices
 import copy
 
 # Set up parameters
-N = 3
+N = 5
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 delta_xy = 1/float(N)
 maxiters = 2000
@@ -16,9 +16,12 @@ omega = 1.5 # For SOR algoritm
 
 def matrix():
     # A is a matrix to quickly add all neighbours
-    a = np.diag([-4 for n in np.arange((N+1)**2)], 0)
-    b = np.diag([1 for n in np.arange((N+1)**2-1)], 1)
-    c = np.diag([1 for n in np.arange((N+1)**2-N-1)], N+1)
+    a = np.diag([-4 for n in np.arange((N-1)**2)])
+    b = np.diag([
+        1 if (n+1)%(N-1) != 0 else 0
+        for n in np.arange((N-1)**2-1)]
+        , 1)
+    c = np.diag([1 for n in np.arange((N-1)**2-N-1)], N+1)
     M = np.matrix(c.T+b.T+a+b+c)
     return M
 
