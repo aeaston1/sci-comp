@@ -87,6 +87,7 @@ if __name__ == "__main__":
     Boundary = np.matrix(Boundary)
     print("Starting loop...")
     # running multiple simulations for various parameters
+    start = time.time()
     for x in range(1,7):
         globals()["newU%s" % x],globals()["newV%s" % x] = \
         simulation(T, globals()["mat_U%s" % x], \
@@ -94,7 +95,6 @@ if __name__ == "__main__":
         globals()["Cons_u%s" % x], globals()["mat_V%s" % x], \
         globals()["newV%s" % x], globals()["V%s" % x], globals()["Cons_v%s" % x],\
         globals()["f_i%s" % x], globals()["k_i%s" % x])
-    start = time.time()
     end = time.time()
     print(end-start)
 
