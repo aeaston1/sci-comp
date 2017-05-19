@@ -8,7 +8,7 @@ import scipy.linalg
 import scipy.sparse.linalg
 import time
 
-N = 4
+N = 10
 # Set up parameters
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 delta_xy = 1/float(N)
@@ -21,20 +21,18 @@ c = 1
 L = 1
 del_t = 1
 del_x = float(L/N)
-del_y = float(1 * L/N)
+del_y = float(1 * L/N) # for square, factor is 1. for rectangle, factor is 2.
 Cons_u = c**2 *(del_t/float(del_x**2))
 diag_num  = (-2./float(del_x)**2) + (-2./float(del_y)**2)
 
 #TODO: notes
-# double check I have the rectangle implemented correctly
+# double check I have the rectangle implemented correctly --> done, check with kk
 # implement the circular properly
 # review eigen vectors
 # review each of the eigenvalue methods in P
-# review what the size L is, pretty sure it is the matrix size
-# what are the discretisation steps?
+# review what the size L is, pretty sure it is the matrix size -->matrix size
+# what are the discretisation steps? --> del_x and del_y
 # time dependent solutions, eigenfrequencies (-values) behave in time
-
-#interval/ (length/breadth)
 
 def matrix():
     '''
@@ -71,7 +69,7 @@ def matrix_rectangle():
     #the return index is the split square array to rectangular shape
     return M[:((N-1)**2)]
 
-def simulation(totT, mat_u, M, Consu, Square=True):
+def simulation(totT, mat_u, M, Consu, shape):
     '''
     totT : number of time iterations
     mat_u : the matrix membrane
@@ -79,11 +77,11 @@ def simulation(totT, mat_u, M, Consu, Square=True):
     Consu : the constant values out the front of the wave equation
     Square : indicating whether the matrix will be square or not
     '''
-    if Square:
+    if shape=="square":
         for t in np.arange(totT):
             newu = Consu*(M*mat_u+mat_u*M + Boundary_square*mat_u)
             mat_u = copy.deepcopy(newu)
-    else:
+    if shape=="rectangle":
         for t in np.arange(totT):
             newu = Consu*(M.T*mat_u+mat_u.T*M + Boundary_rectangle.T*mat_u)
             mat_u = copy.deepcopy(newu[:((N-1)**2)]) #ensure the new shape is copied
@@ -130,31 +128,51 @@ if __name__ == "__main__":
     # boundaries
     # Boundary_square = boundary_square()
     # Boundary_rectangle = boundary_rectangle()
-    print('Starting matrix creation...')
+    print('Starting matrix creation of size : %d' % N)
     start = time.time()
     M_square = matrix()
     end = time.time()
     print('Matrix creation took : %fs' % (end-start))
-    print(M_square)
-    # M_rectangle = matrix_rectangle()
-    # w,vl,vr = scipy.linalg.eig(M_square, left=True, right=True)
-
-    print('Starting eigenvector creation...')
+    print(' ')
+    print('Starting scipy.linalg.eigh() creation...')
     start = time.time()
-    eigh_vals, eigh_vec = scipy.linalg.eigh(M_square)
+    eig2_vals,eig2_vecs = scipy.linalg.eigh(M_square)
     end = time.time()
-    print('Eigenvector creation took : %fs' % (end-start))
+    print('scipy.linalg.eigh() creation took : %fs' % (end-start))
+    print(' ')
 
-    # print(eigh_vals)
-    # print('Starting sparse eigenvector creation...')
-    # start = time.time()
-    # eigs_vals, eigs_vec = scipy.sparse.linalg.eigs(M_square)
-    # end = time.time()
-    # print('Sparse eigenvector creation took : %fs' % (end-start))
-
+    print(eig2_vals)
     fig, ax = plt.subplots()
-    ax.matshow(eigh_vec)
+    ax.plot(eig2_vecs[0])
+    ax.plot(eig2_vecs[1])
+    ax.plot(eig2_vecs[2])
+    ax.plot(eig2_vecs[3])
+    ax.plot(eig2_vecs[4])
+    ax.plot(eig2_vecs[5])
+    ax.plot(eig2_vecs[6])
+    ax.plot(eig2_vecs[7])
+    ax.plot(eig2_vecs[8])
+    ax.plot(eig2_vecs[9])
     plt.show()
+    #other eigenvalues claculation methods
+    # print('Starting scipy.linalg.eig() creation...')
+    # start = time.time()
+    # eig1_vals,eig1_vecs = scipy.linalg.eig(M_square, right=True)
+    # end = time.time()
+    # print('scipy.linalg.eig() creation took : %fs' % (end-start))
+    # print(' ')
+    # print('Starting numpy.linalg.eig() creation...')
+    # start = time.time()
+    # eig3_vals,eig3_vecs = np.linalg.eig(M_square)
+    # end = time.time()
+    # print('numpy.linalg.eig() creation took : %fs' % (end-start))
+    # print(' ')
+    # print('Starting scipy.sparse.linalg.eigs() creation...')
+    # start = time.time()
+    # eig4_vals,eig4_vecs = scipy.sparse.linalg.eigs(M_square)
+    # end = time.time()
+    # print('scipy.sparse.linalg.eigs() creation took : %fs' % (end-start))
+    # print(' ')
 
     # generating some membranes : think this is pointless
     # U_square = fill_square(u_i)
