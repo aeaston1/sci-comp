@@ -1,25 +1,22 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 import pandas # for printing matrices
-import copy
 import scipy.linalg
 import scipy.sparse.linalg
 import time
 
-width = 7
-height = 3
-isCircle = False
-
-# delta_xy = 1/float(N)
-# T = 1
-# u_i = 0.5 # fill value for the membrane shapes
-# c = 1
-# L = 1
-# del_t = 1
+L = 4
+delta_xy = L/20.0
+width = int(L/delta_xy + 1)
+height = int(L/delta_xy + 1)
+isCircle = True
 
 def getGrid(width, height, isCircle):
+    '''
+    The function collects all coordinates in the grid
+    and checkes if they satisfy the boundary conditions
+    '''
     coordinates = [
         (x,y) for x in np.arange(width+1) for y in np.arange(height+1)
         ]
@@ -45,10 +42,11 @@ def matrix(coordinates, boundary, totLen):
 
     M = []
     for n, coor in enumerate(coordinates):
+        i, j = coor
+        if i*delta_xy == 0.6 and j*delta_xy == 1.2: print('FOUND IT')
         if boundary[n]:
             M.append([0 for i in np.arange(totLen)])
             continue
-        i, j = coor
         a = []
         for m, coor in enumerate(coordinates):
             k, l = coor
@@ -59,33 +57,27 @@ def matrix(coordinates, boundary, totLen):
             elif abs(k-i) == 1    and l == j          and not boundary[m]:
                 a.append(1)
             else: a.append(0)
-
         M.append(a)
 
-    return np.matrix(M)
-
-# def simulation(totT, mat_u, M, Consu, shape):
-#     '''
-#     totT : number of time iterations
-#     mat_u : the matrix membrane
-#     M : the matrix of the eigenvalue problem
-#     Consu : the constant values out the front of the wave equation
-#     Square : indicating whether the matrix will be square or not
-#     '''
-#     if shape=="square":
-#         for t in np.arange(totT):
-#             newu = Consu*(M*mat_u+mat_u*M + Boundary_square*mat_u)
-#             mat_u = copy.deepcopy(newu)
-#     if shape=="rectangle":
-#         for t in np.arange(totT):
-#             newu = Consu*(M.T*mat_u+mat_u.T*M + Boundary_rectangle.T*mat_u)
-#             mat_u = copy.deepcopy(newu[:((N-1)**2)]) #ensure the new shape is copied
-#     return newu
+    M = np.matrix(M)
+    return M/delta_xy**2
 
 if __name__ == "__main__":
     totLen = (width+1)*(height+1)
     coordinates, boundary = getGrid(width, height, isCircle)
-    print('  '+str(boundary))
     M = matrix(coordinates, boundary, totLen)
-    plt.matshow(M)
+
+    source_x, source_y = int(0.6/delta_xy), int(1.2/delta_xy)
+    source_n = source_y*width + source_x
+    print(source_n)
+
+    vals, vecs = scipy.linalg.eig(M)
+    for vec in vecs:
+        thisVec = np.zeros((height+1, width+1))
+        for n, coor in enumerate(coordinates):
+            x, y = coor
+            thisVec[x,y] = vec[n]
+        vec = thisVec
+    print(vals)
+    plt.matshow(vec)
     plt.show()
