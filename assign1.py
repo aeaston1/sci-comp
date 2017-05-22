@@ -8,7 +8,7 @@ import scipy.linalg
 import scipy.sparse.linalg
 import time
 
-N = 6
+N = 7
 N_ = (N-1)**2
 # Set up parameters
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
@@ -59,18 +59,6 @@ def matrix(is_circle=False):
     The matrix generation for the square matrix.
     Also soon to be for both matrices and the cirle.
     '''
-    a = np.diag([diag_num for n in np.arange((N-1)**2)])
-    bi = np.diag([
-        1/del_y**2 if (n+1)%(N-1) != 0 else 0
-        for n in np.arange((N-1)**2-1)]
-        , 1)
-    bj = np.diag([
-        1/del_y**2 if (n+1)%(N-1) != 0 else 0
-        for n in np.arange((N-1)**2-1)]
-        , -1)
-    ci = np.diag([1/del_x**2 for n in np.arange((N-1)**2-N-1)], -N-1)
-    cj = np.diag([1/del_x**2 for n in np.arange((N-1)**2-N-1)], N+1)
-    M = np.matrix(ci + cj + bi + bj + a)
     if is_circle:
         a_diag = new_circle.diagonal()
         bi_diag = new_circle.diagonal(1)
@@ -81,15 +69,28 @@ def matrix(is_circle=False):
         print(cj_diag)
         a = np.diag([diag_num*n for n in a_diag])
         bi = np.diag([
-            1/del_y**2 *n if (p+2)%(N-1) != 0 else 0
-            for p,n in enumerate(bi_diag)]
-            , 1)
+        1/del_y**2 *n if (p+2)%(N-1) != 0 else 0
+        for p,n in enumerate(bi_diag)]
+        , 1)
         bj = np.diag([
-            1/del_y**2 *n if (k+2)%(N-1) != 0 else 0
-            for k,n in enumerate(bj_diag)]
-            , -1)
+        1/del_y**2 *n if (k+2)%(N-1) != 0 else 0
+        for k,n in enumerate(bj_diag)]
+        , -1)
         ci = np.diag([1/del_x**2 *n for n in ci_diag], -N-1)
         cj = np.diag([1/del_x**2 *n for n in cj_diag], N+1)
+        M = np.matrix(ci + cj + bi + bj + a)
+    else:
+        a = np.diag([diag_num for n in np.arange((N-1)**2)])
+        bi = np.diag([
+            1/del_y**2 if (n+1)%(N-1) != 0 else 0
+            for n in np.arange((N-1)**2-1)]
+            , 1)
+        bj = np.diag([
+            1/del_y**2 if (n+1)%(N-1) != 0 else 0
+            for n in np.arange((N-1)**2-1)]
+            , -1)
+        ci = np.diag([1/del_x**2 for n in np.arange((N-1)**2-N-1)], -N-1)
+        cj = np.diag([1/del_x**2 for n in np.arange((N-1)**2-N-1)], N+1)
         M = np.matrix(ci + cj + bi + bj + a)
     return M
 

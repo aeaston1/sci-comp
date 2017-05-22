@@ -4,11 +4,30 @@ import numpy as np
 import pandas # for printing matrices
 import scipy.linalg
 
+<<<<<<< Updated upstream
 L = 4
 delta_xy = L/20.0
+<<<<<<< HEAD
 width = round(2*L/delta_xy)
 height = round(L/delta_xy)
 isCircle = False
+=======
+width = int(L/delta_xy + 1)
+height = int(L/delta_xy + 1)
+isCircle = True
+=======
+width = 7
+height = 7
+isCircle = True
+
+# delta_xy = 1/float(N)
+# T = 1
+# u_i = 0.5 # fill value for the membrane shapes
+# c = 1
+# L = 1
+# del_t = 1
+>>>>>>> Stashed changes
+>>>>>>> d054667b2b3474ce1d203e61db35d3b2779da88a
 
 def getGrid(width, height, isCircle):
     '''
