@@ -78,6 +78,6 @@ if __name__ == "__main__":
             x, y = coor
             thisVec[x,y] = vec[n]
         vec = thisVec
-    print(vals)
+
     plt.matshow(vec)
     plt.show()
