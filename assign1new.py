@@ -4,11 +4,11 @@ import numpy as np
 import pandas # for printing matrices
 import scipy.linalg
 
-L = 4
-delta_xy = L/20.0
+L = 1
+delta_xy = L/50
 width = round(L/delta_xy)
-height = round(L/delta_xy)
-isCircle = True
+height = round(2*L/delta_xy)
+isCircle = False
 
 def getGrid(width, height, isCircle):
     '''
@@ -41,15 +41,9 @@ def matrix(coordinates, boundary, totLen, source_n):
     M = []
     for n, coor in enumerate(coordinates):
         i, j = coor
-        # Any sources should only return themselves in the matrix
-        if n == source_n:
-            a = [0 for e in np.arange(totLen)]
-            a[n] = 1
-            M.append(a)
-            continue
         # The boundary terms always return an array of zeros
         if boundary[n]:
-            M.append([1 if e == n else 0 for e in np.arange(totLen)])
+            M.append([0 for e in np.arange(totLen)])
             continue
         # The finite difference scheme-matrix is build
         a = []
@@ -121,15 +115,17 @@ if __name__ == "__main__":
     plt.show()
 
     eigenValues, eigenVectors = scipy.linalg.eig(M)
-    idx = eigenValues.argsort()[::-1]
-    eigenValues = eigenValues[idx]
-    eigenVectors = eigenVectors[:,idx]
+    # idx = eigenValues.argsort()[::-1]
+    # eigenValues = eigenValues[idx]
+    # eigenVectors = eigenVectors[:,idx]
+    eigenVectors=eigenVectors.T
     print(eigenValues)
-    for vec in eigenVectors[:5]:
+    for m,vec in enumerate(eigenVectors[:7]):
         thisVec = np.zeros((height+1, width+1))
         for n, coor in enumerate(coordinates):
             x, y = coor
-            thisVec[x,y] = vec[n]
+            thisVec[y,x] = vec[n]
         vec = thisVec
+        print(eigenValues[m])
         plt.matshow(vec)
         plt.show()
