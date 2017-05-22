@@ -8,7 +8,7 @@ import scipy.linalg
 import scipy.sparse.linalg
 import time
 
-N = 10
+N = 4
 # Set up parameters
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 delta_xy = 1/float(N)
@@ -25,16 +25,35 @@ del_y = float(1 * L/N) # for square, factor is 1. for rectangle, factor is 2.
 Cons_u = c**2 *(del_t/float(del_x**2))
 diag_num  = (-2./float(del_x)**2) + (-2./float(del_y)**2)
 
+#calculations for the circle
+circle_boolarr = np.ones((N, N))
+circle_boolarr_indices = np.nonzero(circle_boolarr)
+circle_central_point = np.full(N**2, int(N-1)/2)
+
+# it = np.nditer(circle_boolarr, flags=['multi_index'])
+# while not it.finished:
+#     num = ({0}.format(it.multi_index))
+#     num = tuple(num)
+#     print(type(num))
+#     stop
+#     a,b = int(num[0]), int(num[1])
+#     d = np.sqrt((a-(int(N-1)/2))**2+(b-(int(N-1)/2)**2))
+#     if d > N/2:
+#         circle_boolarr[a][b] = False
+#     it.iternext()
+# print(circle_boolarr)
+# stop
+
 #TODO: notes
 # double check I have the rectangle implemented correctly --> done, check with kk
-# implement the circular properly
+# implement the circular properly --> krish just tried to implemeint with point checking
 # review eigen vectors
 # review each of the eigenvalue methods in P
 # review what the size L is, pretty sure it is the matrix size -->matrix size
 # what are the discretisation steps? --> del_x and del_y
 # time dependent solutions, eigenfrequencies (-values) behave in time
 
-def matrix():
+def matrix(is_circle=False):
     '''
     The matrix generation for the square matrix.
     Also soon to be for both matrices and the cirle.
@@ -124,10 +143,34 @@ def boundary_rectangle():
     Boundary[N,N] = 1
     return np.matrix(Boundary)
 
+def in_circle(x,y,i,L):
+    '''
+    x : x point to be checked (array like)
+    y : y point to be checked (array like)
+    i : central point coordinates
+    L : length of side
+    '''
+    r = np.full(N**2, L/2)
+    d = np.sqrt((x-i)**2 + (y-i)**2)
+    return d
+    # if(d > r):
+    #     return False
+    # else:
+    #     return True
+
 if __name__ == "__main__":
     # boundaries
     # Boundary_square = boundary_square()
     # Boundary_rectangle = boundary_rectangle()
+    # print(circle_boolarr_indices[0], circle_boolarr_indices[1])
+    im = in_circle(circle_boolarr_indices[0], circle_boolarr_indices[1], circle_central_point, L)
+    new_circle = im.reshape((N,N))
+    print(np.where(new_circle>L/2))
+    #TODO: need to compare every element int he new_circle array with the square array
+    # ix = np.in1d(new_cirle.ravel(), np.full(L/2)).reshape(new_circle.shape)
+    # ix
+    stop
+    print(in_circle())
     print('Starting matrix creation of size : %d' % N)
     start = time.time()
     M_square = matrix()
