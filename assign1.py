@@ -8,7 +8,8 @@ import scipy.linalg
 import scipy.sparse.linalg
 import time
 
-N = 4
+N = 6
+N_ = (N-1)**2
 # Set up parameters
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 delta_xy = 1/float(N)
@@ -26,9 +27,9 @@ Cons_u = c**2 *(del_t/float(del_x**2))
 diag_num  = (-2./float(del_x)**2) + (-2./float(del_y)**2)
 
 #calculations for the circle
-circle_boolarr = np.ones((N, N))
+circle_boolarr = np.ones((N_, N_))
 circle_boolarr_indices = np.nonzero(circle_boolarr)
-circle_central_point = np.full(N**2, int(N-1)/2)
+circle_central_point = np.full(N_**2, int(N_-1)/2)
 
 # it = np.nditer(circle_boolarr, flags=['multi_index'])
 # while not it.finished:
@@ -70,6 +71,26 @@ def matrix(is_circle=False):
     ci = np.diag([1/del_x**2 for n in np.arange((N-1)**2-N-1)], -N-1)
     cj = np.diag([1/del_x**2 for n in np.arange((N-1)**2-N-1)], N+1)
     M = np.matrix(ci + cj + bi + bj + a)
+    if is_circle:
+        a_diag = new_circle.diagonal()
+        bi_diag = new_circle.diagonal(1)
+        bj_diag = new_circle.diagonal(-1)
+        ci_diag = new_circle.diagonal(-N-1)
+        cj_diag = new_circle.diagonal(N+1)
+        # print(bi_diag)
+        print(cj_diag)
+        a = np.diag([diag_num*n for n in a_diag])
+        bi = np.diag([
+            1/del_y**2 *n if (p+2)%(N-1) != 0 else 0
+            for p,n in enumerate(bi_diag)]
+            , 1)
+        bj = np.diag([
+            1/del_y**2 *n if (k+2)%(N-1) != 0 else 0
+            for k,n in enumerate(bj_diag)]
+            , -1)
+        ci = np.diag([1/del_x**2 *n for n in ci_diag], -N-1)
+        cj = np.diag([1/del_x**2 *n for n in cj_diag], N+1)
+        M = np.matrix(ci + cj + bi + bj + a)
     return M
 
 def matrix_rectangle():
@@ -147,11 +168,12 @@ def in_circle(x,y,i,L):
     '''
     x : x point to be checked (array like)
     y : y point to be checked (array like)
-    i : central point coordinates
+    i : central point coordinates (array like)
     L : length of side
     '''
-    r = np.full(N**2, L/2)
+    r = np.full(N_**2, N_/2)
     d = np.sqrt((x-i)**2 + (y-i)**2)
+    d[(d.shape[0]-1)/2] = 1.
     return d
     # if(d > r):
     #     return False
@@ -163,20 +185,24 @@ if __name__ == "__main__":
     # Boundary_square = boundary_square()
     # Boundary_rectangle = boundary_rectangle()
     # print(circle_boolarr_indices[0], circle_boolarr_indices[1])
+    # creates bool array of circle
     im = in_circle(circle_boolarr_indices[0], circle_boolarr_indices[1], circle_central_point, L)
-    new_circle = im.reshape((N,N))
-    print(np.where(new_circle>L/2))
-    #TODO: need to compare every element int he new_circle array with the square array
-    # ix = np.in1d(new_cirle.ravel(), np.full(L/2)).reshape(new_circle.shape)
-    # ix
-    stop
-    print(in_circle())
+    new_circle = im.reshape((N_,N_))
+    new_circle[new_circle>N_/2.0] = False
+    new_circle[new_circle>1.] = True
+    new_circle = new_circle.astype(bool)
     print('Starting matrix creation of size : %d' % N)
     start = time.time()
-    M_square = matrix()
+    M_square = matrix(is_circle=True)
     end = time.time()
     print('Matrix creation took : %fs' % (end-start))
     print(' ')
+
+    plt.matshow(M_square)
+    plt.show()
+    # print(M_square[np.where(new_circle)])
+    stop
+
     print('Starting scipy.linalg.eigh() creation...')
     start = time.time()
     eig2_vals,eig2_vecs = scipy.linalg.eigh(M_square)
