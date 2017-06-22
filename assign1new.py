@@ -5,10 +5,10 @@ import pandas # for printing matrices
 import scipy.linalg
 
 L = 1
-delta_xy = L/50
+delta_xy = L/50.
 width = round(L/delta_xy)
 height = round(L/delta_xy)
-isCircle = True
+isCircle = False
 
 def getGrid(width, height, isCircle):
     '''
@@ -108,19 +108,23 @@ if __name__ == "__main__":
     M = matrix(coordinates, boundary, totLen)
     reduceM = reduceMatrix(M, boundary)
 
+    # The matrix is altered to remove the empty rows and columns
+    reduceM = reduceMatrix(M,boundary)
+
+    # plt.matshow(reduceM)
+    # plt.show()
+
     eigenValues, eigenVectors = scipy.linalg.eig(M)
     eigenVectors=eigenVectors.T
-
-    for t in range(1,21):
-        vec = eigenVectors[2]
-        m = 1
-        # for m,vec in enumerate(eigenVectors[:2]):
-        thisVec = np.zeros((height+1, width+1))
-        for n, coor in enumerate(coordinates):
-            x, y = coor
-            thisVec[y,x] = vec[n] * np.sin((t * 1/4 * 2*np.pi/np.sqrt(abs(eigenValues[m].real))))
-        vec = thisVec
-        print(eigenValues[m])
-        plt.matshow(vec)
-        # plt.clim(-0.1,0)
-        plt.show()
+    print(eigenValues)
+    plt.plot(eigenValues)
+    plt.show()
+    # for m,vec in enumerate(eigenVectors[:7]):
+    #     thisVec = np.zeros((height+1, width+1))
+    #     for n, coor in enumerate(coordinates):
+    #         x, y = coor
+    #         thisVec[y,x] = vec[n]
+    #     vec = thisVec
+    #     print(eigenValues[m])
+    #     plt.matshow(vec)
+    #     plt.show()
