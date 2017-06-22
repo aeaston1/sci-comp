@@ -8,7 +8,7 @@ import pandas # for printing
 import copy
 
 # Set up parameters
-N = 65
+N = 70
 coordinates = [(x,y+1) for x in range(N+1) for y in range(N-1)]
 Cons, delta_xy = 1/4.0, 1/float(N)
 maxiters = 2000
@@ -162,32 +162,39 @@ if __name__ == "__main__":
     # plt.show()
 
     # Question J
-    fig, axarr = plt.subplots(ncols=3, nrows=1)
+    # fig, axarr = plt.subplots(ncols=3, nrows=1)
+    #
+    # JacobiSolution = Jacobi(newMatrix(), epsilon)[0]
+    # GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon)[0]
+    # SORSolution = SOR(newMatrix(), epsilon, omega)[0]
+    #
+    # axarr[0].matshow(JacobiSolution)
+    # axarr[0].set_title('Jacobi Solution', fontsize=20)
+    # axarr[0].xaxis.set_ticks_position('bottom')
+    # axarr[1].matshow(GaussSeidelSolution)
+    # axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
+    # axarr[1].xaxis.set_ticks_position('bottom')
+    # axarr[2].matshow(SORSolution)
+    # axarr[2].set_title('SOR Solution', fontsize=20)
+    # axarr[2].xaxis.set_ticks_position('bottom')
+    #
+    # axarr[0].set_ylabel("y value", fontsize=20)
+    # axarr[0].set_xlabel("x value", fontsize=20)
+    # axarr[1].set_xlabel("x value", fontsize=20)
+    # axarr[2].set_xlabel("x value", fontsize=20)
+    # # changing tick labels etc.
+    # plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==1 or i==2], visible=False)
+    # plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==0], fontsize=20)
+    # plt.setp([a.get_xticklabels() for a in axarr], fontsize=20)
+    # plt.show()
 
-    JacobiSolution = Jacobi(newMatrix(), epsilon)[0]
-    GaussSeidelSolution = GaussSeidel(newMatrix(), epsilon)[0]
+    #generation of image for website
+
+    fig, axarr = plt.subplots()
+
     SORSolution = SOR(newMatrix(), epsilon, omega)[0]
-
-    axarr[0].matshow(JacobiSolution)
-    axarr[0].set_title('Jacobi Solution', fontsize=20)
-    axarr[0].xaxis.set_ticks_position('bottom')
-    axarr[1].matshow(GaussSeidelSolution)
-    axarr[1].set_title('Gauss-Seidel Solution', fontsize=20)
-    axarr[1].xaxis.set_ticks_position('bottom')
-    axarr[2].matshow(SORSolution)
-    axarr[2].set_title('SOR Solution', fontsize=20)
-    axarr[2].xaxis.set_ticks_position('bottom')
-
-    axarr[0].set_ylabel("y value", fontsize=20)
-    axarr[0].set_xlabel("x value", fontsize=20)
-    axarr[1].set_xlabel("x value", fontsize=20)
-    axarr[2].set_xlabel("x value", fontsize=20)
-    # changing tick labels etc.
-    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==1 or i==2], visible=False)
-    plt.setp([a.get_yticklabels() for i,a in enumerate(axarr) if i==0], fontsize=20)
-    plt.setp([a.get_xticklabels() for a in axarr], fontsize=20)
+    axarr.matshow(SORSolution)
     plt.show()
-
     # def minBoxSOR(omega):
     #     print(omega)
     #     M = newMatrix()

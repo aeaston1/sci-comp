@@ -4,11 +4,11 @@ import numpy as np
 import pandas # for printing matrices
 import scipy.linalg
 
-L = 1
-delta_xy = L/50
-width = round(L/delta_xy)
+L = 4
+delta_xy = L/20.0
+width = round(2*L/delta_xy)
 height = round(L/delta_xy)
-isCircle = True
+isCircle = False
 
 def getGrid(width, height, isCircle):
     '''
@@ -37,25 +37,32 @@ def getGrid(width, height, isCircle):
 
     return coordinates, boundary
 
-def matrix(coordinates, boundary, totLen):
+def matrix(coordinates, boundary, totLen, source_n):
     '''
-    The matrix generation for the square matrix and circle
+    The matrix generation for the square matrix.
+    Also soon to be for both matrices and the cirle.
     '''
 
     M = []
     for n, coor in enumerate(coordinates):
         i, j = coor
+        # Any sources should only return themselves in the matrix
+        if n == source_n:
+            a = [0 for e in np.arange(totLen)]
+            a[n] = 1
+            M.append(a)
+            continue
         # The boundary terms always return an array of zeros
         if boundary[n]:
-            M.append([0 for e in np.arange(totLen)])
+            M.append([1 if e == n else 0 for e in np.arange(totLen)])
             continue
         # The finite difference scheme-matrix is build
         a = []
         for m, coor in enumerate(coordinates):
             k, l = coor
-            if k == i and abs(l-j) == 1 and not boundary[m]:
+            if k == i and abs(l-j) == 1:
                 a.append(1)
-            elif abs(k-i) == 1 and l == j and not boundary[m]:
+            elif abs(k-i) == 1 and l == j:
                 a.append(1)
             else: a.append(0)
         for m, coor in enumerate(coordinates):
@@ -70,57 +77,36 @@ def toGrid(vec, boundary):
     '''
     The function takes a vector and transforms it to a grid
     '''
-    expandVec = []
-    i = 0
-    for isBoundary in boundary:
-        if not isBoundary:
-            expandVec.append(vec[i])
-            i += 1
-        else: expandVec.append(0)
-
-    A = np.zeros((height+1, width+1))
+    A = np.zeros((width+1, height+1))
     for n, coor in enumerate(coordinates):
         x, y = coor
-        A[x,y] = expandVec[n]
+        A[x,y] = vec[n]
 
     return A
-
-def reduceMatrix(M, boundary):
-    '''
-    Empty rows and column are removed, so a non-singular matrix is obtained
-    '''
-    reduceM = []
-    for i, row in enumerate(M):
-        if boundary[i]: continue
-        a = []
-        for j, value in enumerate(row):
-            if boundary[j]: continue
-            a.append(value)
-        reduceM.append(a)
-
-    return np.matrix(reduceM)
 
 if __name__ == "__main__":
     totLen = (width+1)*(height+1)
     coordinates, boundary = getGrid(width, height, isCircle)
 
+    # The coordinate and index of the source are obtained
+    source_x, source_y = round(0.6/delta_xy), round(1.2/delta_xy)
+    source_n = (source_y)*(width + 1) + source_x
+    sourceVec = np.array([1 if i == source_n else 0 for i in np.arange(totLen)])
+
     # The finite-difference matrix is obtained
-    M = matrix(coordinates, boundary, totLen)
-    reduceM = reduceMatrix(M, boundary)
+    M = matrix(coordinates, boundary, totLen, source_n)
 
-    eigenValues, eigenVectors = scipy.linalg.eig(M)
-    eigenVectors=eigenVectors.T
+    # The equation is solved
+    result = scipy.linalg.solve(M, sourceVec)
+    result = toGrid(result, boundary)
 
-    for t in range(1,21):
-        vec = eigenVectors[2]
-        m = 1
-        # for m,vec in enumerate(eigenVectors[:2]):
-        thisVec = np.zeros((height+1, width+1))
-        for n, coor in enumerate(coordinates):
-            x, y = coor
-            thisVec[y,x] = vec[n] * np.sin((t * 1/4 * 2*np.pi/np.sqrt(abs(eigenValues[m].real))))
-        vec = thisVec
-        print(eigenValues[m])
-        plt.matshow(vec)
-        # plt.clim(-0.1,0)
-        plt.show()
+    result = np.matrix(result)
+    result[result==0] = 1
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plot = ax.imshow(result, extent=[0, 4, 0, 4], origin='lower')
+    ax.set_xlabel('y')
+    ax.set_ylabel('x')
+    fig.colorbar(plot)
+    plt.show()
